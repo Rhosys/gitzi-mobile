@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -70,7 +69,7 @@ private fun BoardLane(column: Column, tasks: List<Task>, onTaskClick: (String) -
             )
         }
         LazyColumn(
-            modifier = Modifier.fillMaxWidth().weight(1f).padding(top = 8.dp),
+            modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(top = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(tasks, key = { it.id }) { task ->

@@ -2,6 +2,7 @@ package ch.rhosys.gitzi.di
 
 import ch.rhosys.gitzi.data.remote.GitziApiService
 import ch.rhosys.gitzi.domain.repository.ConnectionSettingsRepository
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,7 +20,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import javax.inject.Provider
 import javax.inject.Singleton
 
