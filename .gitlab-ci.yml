@@ -1,0 +1,173 @@
+# CI runs compile, lint, and unit tests on every push and MR.
+# release (main only): builds signed AAB, deploys to Play Store, notifies.
+#
+# AUTO_DEPLOY defaults to true: every push to main deploys automatically.
+# The app is pre-release — no reason to gate behind a manual step yet.
+# Flip to "false" once shipping to real users.
+#
+# Secrets in deployment/ — no CI variables needed except AWS_ACCOUNT_ID:
+#   android-upload-signing.json   keystore (base64 PKCS12) + KMS-encrypted password
+
+variables:
+  AUTO_DEPLOY: "true"
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH'
+
+stages:
+  - validate
+  - release
+
+default:
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+
+# ── Shared Gradle config ──────────────────────────────────────────────────────
+
+.gradle-job:
+  image: cimg/android:2026.03.1-node
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - when: on_success
+  variables:
+    GRADLE_USER_HOME: '$CI_PROJECT_DIR/.gradle'
+    GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.caching=true'
+  cache:
+    key: gradle-$CI_COMMIT_REF_SLUG
+    paths:
+      - .gradle/
+
+# ── Validate ──────────────────────────────────────────────────────────────────
+
+test:
+  extends: .gradle-job
+  stage: validate
+  script:
+    - ./gradlew testDebugUnitTest
+
+lint:
+  extends: .gradle-job
+  stage: validate
+  script:
+    - ./gradlew lintDebug
+
+# ── Release ───────────────────────────────────────────────────────────────────
+
+release:
+  extends: .gradle-job
+  stage: release
+  variables:
+    AWS_WEB_IDENTITY_TOKEN_FILE: "${CI_PROJECT_DIR}/aws.jwt"
+    AWS_DEFAULT_REGION: "eu-west-1"
+    AWS_ROLE_ARN: "arn:aws:iam::${AWS_ACCOUNT_ID}:role/GitLabRunnerRole"
+    GOOGLE_APPLICATION_CREDENTIALS: "/tmp/gcp-workload-identity.json"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" && $AUTO_DEPLOY == "true"'
+      when: on_success
+    - if: '$CI_COMMIT_BRANCH == "main" && ($CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "api")'
+      when: manual
+  script:
+    - set -eo pipefail
+
+    # ── Compute version ───────────────────────────────────────────────────────
+    - |
+      BRANCH="${CI_COMMIT_BRANCH:-main}"
+      export BUILD_NUMBER="${CI_PIPELINE_IID:-0}"
+      if [[ "$BRANCH" =~ ^release/([0-9]+\.[0-9]+)$ ]]; then
+        export VERSION="${BASH_REMATCH[1]}.${BUILD_NUMBER}"
+      else
+        export VERSION="1.0.${BUILD_NUMBER}"
+      fi
+
+    # ── AWS credentials (KMS decrypt + SES notify) ────────────────────────────
+    - echo "${GITLAB_OIDC_TOKEN}" > "${AWS_WEB_IDENTITY_TOKEN_FILE}"
+    - curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+    - unzip -q /tmp/awscliv2.zip -d /tmp && /tmp/aws/install --install-dir "$HOME/.local/aws-cli" --bin-dir "$HOME/.local/bin"
+    - export PATH="$HOME/.local/bin:$PATH"
+
+    # ── Build signed release AAB ──────────────────────────────────────────────
+    - jq -r '.keystore' deployment/android-upload-signing.json | base64 --decode > app/android-upload-signing.keystore
+    - STORE_PASSWORD=$(jq -r '.passwordCiphertext' deployment/android-upload-signing.json | base64 --decode | aws kms decrypt --ciphertext-blob fileb:///dev/stdin --region eu-west-1 --output text --query Plaintext | base64 --decode)
+    - |
+      ./gradlew bundleRelease \
+        -PversionName="$VERSION" \
+        -PversionCode="$BUILD_NUMBER" \
+        -Pandroid.injected.signing.store.file="$CI_PROJECT_DIR/app/android-upload-signing.keystore" \
+        -Pandroid.injected.signing.store.password="$STORE_PASSWORD" \
+        -Pandroid.injected.signing.key.alias="gitzi" \
+        -Pandroid.injected.signing.key.password="$STORE_PASSWORD"
+
+    # ── Deploy to Play Store ──────────────────────────────────────────────────
+    - npm ci --cache .npm
+    - echo "${GITLAB_OIDC_TOKEN}" > /tmp/gcp-oidc.jwt
+    - echo '{"type":"external_account","audience":"//iam.googleapis.com/projects/454629444494/locations/global/workloadIdentityPools/gitlab-oidc/providers/gitlab-com","subject_token_type":"urn:ietf:params:oauth:token-type:id_token","token_url":"https://sts.googleapis.com/v1/token","credential_source":{"file":"/tmp/gcp-oidc.jwt"},"service_account_impersonation_url":"https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/gitlab-play-store@rhosys-apps.iam.gserviceaccount.com:generateAccessToken"}' > "$GOOGLE_APPLICATION_CREDENTIALS"
+    - npm run deploy:play-store
+
+    # ── Notify ────────────────────────────────────────────────────────────────
+    - npm run deploy:notify -- --version-code "$BUILD_NUMBER" --version-name "$VERSION"
+  artifacts:
+    when: always
+    expose_as: 'Android Release AAB'
+    paths:
+      - app/build/outputs/bundle/release/app-release.aab
+    expire_in: 30 days
+  cache:
+    - key: gradle-$CI_COMMIT_REF_SLUG
+      paths:
+        - .gradle/
+    - key:
+        files:
+          - package-lock.json
+      paths:
+        - .npm/
+  timeout: 15m
+
+# ── Sync from GitHub (scheduled only) ────────────────────────────────────────
+
+sync-from-github:
+  image: bitnami/git:latest
+  stage: validate
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+  script:
+    - set -eo pipefail
+    - command -v curl >/dev/null 2>&1 || (apt-get update -qq && apt-get install -y -qq curl)
+    - git remote add github https://github.com/Rhosys/gitzi-mobile.git
+    - git fetch github main
+    - git fetch origin main
+    - git remote set-url --push origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - |
+      if git diff --quiet origin/main github/main; then
+        echo "No code differences from GitHub main — nothing to sync."
+        exit 0
+      fi
+    - git checkout -B main origin/main
+    - git -c user.email="ci@rhosys.ch" -c user.name="GitLab CI" merge github/main --no-edit
+    - git push origin main
+    - |
+      curl --fail --request POST \
+        --form token="${CI_JOB_TOKEN}" \
+        --form ref=main \
+        --form "variables[AUTO_DEPLOY]=true" \
+        "https://${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline"
+
+# ── Debug APK (manual, MRs only) ─────────────────────────────────────────────
+
+pr-debug-build:
+  extends: .gradle-job
+  stage: release
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: manual
+  script:
+    - ./gradlew assembleDebug
+  artifacts:
+    when: always
+    expose_as: 'Android Debug APK'
+    paths:
+      - app/build/outputs/apk/debug/app-debug.apk
+    expire_in: 7 days
