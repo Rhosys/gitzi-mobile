@@ -1,0 +1,22 @@
+{
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "setup": "bash scripts/setup.sh",
+    "start": "bash scripts/dev.sh debug",
+    "start:release": "bash scripts/dev.sh release",
+    "emulator:create": "bash scripts/emulator-create.sh",
+    "emulator:start": "bash scripts/emulator-start.sh",
+    "emulator:delete": "bash scripts/emulator-delete.sh",
+    "build": "./gradlew :app:assembleDebug",
+    "build:release": "./gradlew :app:assembleRelease",
+    "check": "bash scripts/check.sh"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.3.0"
+  },
+  "lint-staged": {
+    "*.kt": ["ktlint --format"]
+  }
+}
