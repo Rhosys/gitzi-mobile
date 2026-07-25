@@ -106,6 +106,8 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
 
+    implementation(libs.posthog.android)
+
     debugImplementation(libs.compose.ui.tooling)
 
     testImplementation(libs.junit)
