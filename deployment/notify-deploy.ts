@@ -1,48 +1,42 @@
 #!/usr/bin/env tsx
 /**
- * notify-deploy — sends a deployment notification email via SES.
+ * notify-deploy — posts a deployment notification to Discord via webhook.
  *
  * Usage:
  *   notify-deploy --version-code <code> --version-name <name>
  *
- * AWS credentials come from the environment (OIDC web identity in CI).
+ * Requires env: DISCORD_RHOSYS_CI_CD_CHANNEL_WEBHOOK
  */
 
-import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
 import { PACKAGE_NAME } from './deploy-play-store';
-
-const FROM_ADDRESS = 'gitlab-runner@rhosys.cloud';
-const TO_ADDRESS = 'developers@rhosys.ch';
-const REGION = 'eu-west-1';
-
-export interface NotifyDeps {
-  sendEmail: (subject: string, body: string) => Promise<void>;
-  print: (msg: string) => void;
-}
 
 export function buildTestingUrl(packageName: string, versionCode: string): string {
   return `https://play.google.com/apps/test/${packageName}/${versionCode}`;
+}
+
+export interface NotifyDeps {
+  postToDiscord: (webhookUrl: string, body: object) => Promise<void>;
+  print: (msg: string) => void;
 }
 
 export async function notifyDeploy(
   packageName: string,
   versionCode: string,
   versionName: string,
+  webhookUrl: string,
   deps: NotifyDeps,
 ): Promise<void> {
   const testingUrl = buildTestingUrl(packageName, versionCode);
-  const subject = `[Deploy] ${packageName} v${versionName} (${versionCode}) published`;
-  const body = [
-    `A new version of ${packageName} has been published to the Play Store Internal Testing track.`,
-    '',
-    `Version: ${versionName} (code ${versionCode})`,
-    `Testing link: ${testingUrl}`,
-    '',
-    'Install or update via the link above.',
-  ].join('\n');
 
-  deps.print(`Sending deployment notification to ${TO_ADDRESS}...`);
-  await deps.sendEmail(subject, body);
+  const embed = {
+    title: `📱 ${packageName} v${versionName} (${versionCode})`,
+    description: `Published to Play Store Internal Testing track.\n\n**[Install / Update](${testingUrl})**`,
+    color: 0x34a853,
+    timestamp: new Date().toISOString(),
+  };
+
+  deps.print(`Posting deploy notification to Discord...`);
+  await deps.postToDiscord(webhookUrl, { embeds: [embed] });
   deps.print(`✓ Notification sent.`);
 }
 
@@ -65,22 +59,23 @@ function parseArgs(args: string[]): { versionCode: string; versionName: string }
 
 async function main(): Promise<void> {
   const { versionCode, versionName } = parseArgs(process.argv.slice(2));
-  const packageName = PACKAGE_NAME;
+  const webhookUrl = process.env.DISCORD_RHOSYS_CI_CD_CHANNEL_WEBHOOK;
 
-  const ses = new SESv2Client({ region: REGION });
+  if (!webhookUrl) {
+    process.stderr.write('Warning: DISCORD_RHOSYS_CI_CD_CHANNEL_WEBHOOK not set — skipping notification.\n');
+    return;
+  }
 
-  await notifyDeploy(packageName, versionCode, versionName, {
-    sendEmail: async (subject, body) => {
-      await ses.send(new SendEmailCommand({
-        FromEmailAddress: FROM_ADDRESS,
-        Destination: { ToAddresses: [TO_ADDRESS] },
-        Content: {
-          Simple: {
-            Subject: { Data: subject },
-            Body: { Text: { Data: body } },
-          },
-        },
-      }));
+  await notifyDeploy(PACKAGE_NAME, versionCode, versionName, webhookUrl, {
+    postToDiscord: async (url, body) => {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        throw new Error(`Discord webhook failed: ${res.status} ${await res.text()}`);
+      }
     },
     print: (msg) => process.stderr.write(msg + '\n'),
   });
