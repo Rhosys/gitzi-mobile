@@ -8,10 +8,15 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-/** Debug builds default to mock data (see ConnectionSettings.useMockData) but can hot-swap to the real API from Settings. */
+/**
+ * Binds the switchable repository for all build types. Mock mode is
+ * toggleable via Settings → "Use mock data". Once a real backend is
+ * deployed and stable, this can be reverted to bind RemoteGitziRepository
+ * directly and the mock toggle removed from Settings.
+ */
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class DebugRepositoryModule {
+abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindGitziRepository(impl: SwitchableGitziRepository): GitziRepository

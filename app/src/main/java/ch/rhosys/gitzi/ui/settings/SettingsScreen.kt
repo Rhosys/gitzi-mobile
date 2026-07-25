@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import ch.rhosys.gitzi.BuildConfig
 import ch.rhosys.gitzi.domain.model.AgentDef
 import ch.rhosys.gitzi.domain.model.ProviderDef
 import ch.rhosys.gitzi.domain.model.RepoConfig
@@ -54,17 +53,15 @@ fun SettingsScreen(
                 )
             }
 
-            if (BuildConfig.DEBUG) {
-                item {
-                    SectionCard("Demo mode") {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text("Use mock data", style = MaterialTheme.typography.bodyMedium)
-                            Switch(checked = state.connection.useMockData, onCheckedChange = viewModel::setUseMockData)
-                        }
+            item {
+                SectionCard("Demo mode") {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text("Use mock data", style = MaterialTheme.typography.bodyMedium)
+                        Switch(checked = state.connection.useMockData, onCheckedChange = viewModel::setUseMockData)
                     }
                 }
             }

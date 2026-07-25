@@ -64,15 +64,6 @@ android {
             )
     }
 
-    sourceSets {
-        getByName("debug") {
-            java.srcDirs("src/debug/java")
-        }
-        getByName("release") {
-            java.srcDirs("src/release/java")
-        }
-    }
-
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
