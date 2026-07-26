@@ -6,16 +6,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -60,24 +55,18 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private data class BottomTab(val screen: Screen, val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
+private data class MenuItem(val screen: Screen, val label: String)
 
-private val BOTTOM_TABS =
+private val MENU_ITEMS =
     listOf(
-        BottomTab(Screen.Chat, "Chat", Icons.Default.Chat),
-        BottomTab(Screen.Board, "Board", Icons.Default.FactCheck),
-        BottomTab(Screen.Settings, "Settings", Icons.Default.Settings),
+        MenuItem(Screen.Chat, "Chat"),
+        MenuItem(Screen.Board, "Board"),
+        MenuItem(Screen.Epics, "Epics"),
+        MenuItem(Screen.Review, "Review"),
+        MenuItem(Screen.Settings, "Settings"),
     )
 
-private data class OverflowItem(val screen: Screen, val label: String)
-
-private val OVERFLOW_ITEMS =
-    listOf(
-        OverflowItem(Screen.Epics, "Epics"),
-        OverflowItem(Screen.Review, "Review"),
-    )
-
-private val CHROME_ROUTES = (BOTTOM_TABS.map { it.screen.route } + OVERFLOW_ITEMS.map { it.screen.route }).toSet()
+private val CHROME_ROUTES = MENU_ITEMS.map { it.screen.route }.toSet()
 
 @Composable
 private fun GitziRoot(startDestination: String) {
@@ -100,7 +89,7 @@ private fun GitziRoot(startDestination: String) {
                             expanded = menuExpanded,
                             onDismissRequest = { menuExpanded = false },
                         ) {
-                            OVERFLOW_ITEMS.forEach { item ->
+                            MENU_ITEMS.forEach { item ->
                                 DropdownMenuItem(
                                     text = { Text(item.label) },
                                     onClick = {
@@ -116,26 +105,6 @@ private fun GitziRoot(startDestination: String) {
                         }
                     },
                 )
-            }
-        },
-        bottomBar = {
-            if (showChrome) {
-                NavigationBar {
-                    BOTTOM_TABS.forEach { tab ->
-                        NavigationBarItem(
-                            selected = currentRoute == tab.screen.route,
-                            onClick = {
-                                navController.navigate(tab.screen.route) {
-                                    popUpTo(Screen.Chat.route) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            icon = { Icon(tab.icon, contentDescription = null) },
-                            label = { Text(tab.label) },
-                        )
-                    }
-                }
             }
         },
     ) { innerPadding ->
