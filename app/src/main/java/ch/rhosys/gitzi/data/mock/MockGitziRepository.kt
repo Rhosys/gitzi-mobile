@@ -132,11 +132,17 @@ class MockGitziRepository
                 ),
             )
 
+        private var nextMsgId = 3
+
+        private val mockSessionId = "mock-session-1"
+
         private val chat =
             MutableStateFlow(
                 listOf(
-                    ChatMessage(ChatRole.User, "Let's get the auth overhaul epic moving.", now()),
+                    ChatMessage("msg-1", mockSessionId, ChatRole.User, "Let's get the auth overhaul epic moving.", now()),
                     ChatMessage(
+                        "msg-2",
+                        mockSessionId,
                         ChatRole.Agent,
                         "Created epic \"Auth overhaul\" with 4 tasks. Coder picked up the OAuth login flow first.",
                         now(),
@@ -247,8 +253,8 @@ class MockGitziRepository
         override suspend fun answerReviewItem(itemId: String, content: String): Result<Unit> {
             val item = reviewQueue.value.firstOrNull { it.id == itemId } ?: return Result.failure(NoSuchElementException(itemId))
             reviewQueue.value = sortQueue(reviewQueue.value.filterNot { it.id == itemId })
-            appendChat(ChatMessage(ChatRole.User, content, now()))
-            appendChat(ChatMessage(ChatRole.Agent, "Got it — resuming task ${item.taskId}.", now()))
+            appendChat(ChatMessage("msg-${nextMsgId++}", mockSessionId, ChatRole.User, content, now()))
+            appendChat(ChatMessage("msg-${nextMsgId++}", mockSessionId, ChatRole.Agent, "Got it — resuming task ${item.taskId}.", now()))
             return Result.success(Unit)
         }
 
@@ -273,9 +279,19 @@ class MockGitziRepository
         }
 
         override suspend fun sendChatMessage(content: String): Result<Unit> {
-            appendChat(ChatMessage(ChatRole.User, content, now()))
+            appendChat(ChatMessage("msg-${nextMsgId++}", mockSessionId, ChatRole.User, content, now()))
             delay(0.3.seconds)
-            appendChat(ChatMessage(ChatRole.Agent, "(demo mode — no agent is actually connected)", now()))
+            appendChat(ChatMessage("msg-${nextMsgId++}", mockSessionId, ChatRole.Agent, "(demo mode — no agent is actually connected)", now()))
+            return Result.success(Unit)
+        }
+
+        override suspend fun editChatMessage(sessionId: String, messageId: String, content: String): Result<Unit> {
+            chat.value = chat.value.map { if (it.id == messageId) it.copy(content = content) else it }
+            return Result.success(Unit)
+        }
+
+        override suspend fun deleteChatMessage(sessionId: String, messageId: String): Result<Unit> {
+            chat.value = chat.value.filterNot { it.id == messageId }
             return Result.success(Unit)
         }
 

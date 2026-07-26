@@ -6,6 +6,7 @@ import ch.rhosys.gitzi.data.remote.dto.CreateEpicRequest
 import ch.rhosys.gitzi.data.remote.dto.CreateTaskRequest
 import ch.rhosys.gitzi.data.remote.dto.ParkTaskRequest
 import ch.rhosys.gitzi.data.remote.dto.RejectReviewRequest
+import ch.rhosys.gitzi.data.remote.dto.EditChatMessageRequest
 import ch.rhosys.gitzi.data.remote.dto.SendChatRequest
 import ch.rhosys.gitzi.data.remote.dto.UpdateConfigRequest
 import ch.rhosys.gitzi.data.remote.dto.UpdateTaskRequest
@@ -140,6 +141,18 @@ class RemoteGitziRepository
 
         override suspend fun sendChatMessage(content: String): Result<Unit> =
             runCatching { api.sendChatMessage(SendChatRequest(content)) }
+
+        override suspend fun editChatMessage(sessionId: String, messageId: String, content: String): Result<Unit> =
+            runCatching {
+                api.editChatMessage(sessionId, messageId, EditChatMessageRequest(content))
+                chat.value = chat.value.map { if (it.id == messageId) it.copy(content = content) else it }
+            }
+
+        override suspend fun deleteChatMessage(sessionId: String, messageId: String): Result<Unit> =
+            runCatching {
+                api.deleteChatMessage(sessionId, messageId)
+                chat.value = chat.value.filterNot { it.id == messageId }
+            }
 
         override suspend fun updateConfig(config: GitziConfig): Result<Unit> =
             runCatching {

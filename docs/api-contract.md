@@ -50,6 +50,8 @@ in Settings and sends it on every request and on the WebSocket upgrade.
 | `POST /v1/review-queue/{id}/approve`    | Approve a buffer item                       | —                          |
 | `POST /v1/review-queue/{id}/reject`     | Reject a buffer item with feedback          | —                          |
 | `GET /v1/chat` / `POST /v1/chat`        | Main-agent chat history / send a message    | —                          |
+| `PATCH /v1/chat/sessions/{sid}/messages/{mid}` | Edit a message's content              | —                          |
+| `DELETE /v1/chat/sessions/{sid}/messages/{mid}` | Delete a message from the session      | —                          |
 | `GET /v1/config` / `PUT /v1/config`     | Providers, agents, WIP limits, repos        | —                          |
 | `POST /v1/providers/discover`           | Scan for LM Studio / Ollama / Bedrock (SSO) | provider auto-discovery    |
 | `POST /v1/providers/{name}/activate`    | Turn a discovered provider on               | `gitzi_activate_provider`  |

@@ -78,6 +78,12 @@ class SwitchableGitziRepository
 
         override suspend fun sendChatMessage(content: String) = active().sendChatMessage(content)
 
+        override suspend fun editChatMessage(sessionId: String, messageId: String, content: String) =
+            active().editChatMessage(sessionId, messageId, content)
+
+        override suspend fun deleteChatMessage(sessionId: String, messageId: String) =
+            active().deleteChatMessage(sessionId, messageId)
+
         override suspend fun updateConfig(config: GitziConfig) = active().updateConfig(config)
 
         override suspend fun discoverProviders(): Result<List<ProviderDef>> = active().discoverProviders()

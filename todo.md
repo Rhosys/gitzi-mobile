@@ -22,6 +22,13 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - The agent (backend) decides when a stacked side conversation is finished and pops the stack automatically
 - UI needs to visually represent the stack (e.g., show that a background conversation is still running)
 
+### Message interactions
+- Long-press on any message opens a context menu: Copy, Edit (user messages only), Delete (user messages only)
+- **Copy**: activates text selection mode on the message for 20 seconds, then auto-deactivates. During copy mode, the user can select and copy parts of the message text.
+- **Edit**: converts the message bubble into an inline text area with Cancel / Save buttons. On save, calls `PATCH /v1/chat/sessions/{sessionId}/messages/{messageId}` with the new content.
+- **Delete**: shows a confirmation dialog. On confirm, calls `DELETE /v1/chat/sessions/{sessionId}/messages/{messageId}` and removes the message from the local chat list.
+- Edit and Delete are only available on user-sent messages (ChatRole.User).
+
 ### Contextual bring-up
 - User can pull a domain object (task, epic, review queue item, code diff, canvas) into the active chat as a rich inline element
 - Both user and agent can see it, comment on it, and the agent can modify it based on the discussion

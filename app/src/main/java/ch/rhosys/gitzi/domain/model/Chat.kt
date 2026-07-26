@@ -13,6 +13,8 @@ enum class ChatRole {
 
 @Serializable
 data class ChatMessage(
+    val id: String,
+    val sessionId: String,
     val role: ChatRole,
     val content: String,
     val ts: Instant,
