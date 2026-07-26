@@ -27,12 +27,13 @@ fun AppNavHost(
         composable(Screen.Setup.route) {
             SetupScreen(
                 onSetupComplete = {
-                    navController.navigate(Screen.Board.route) {
+                    navController.navigate(Screen.Chat.route) {
                         popUpTo(Screen.Setup.route) { inclusive = true }
                     }
                 },
             )
         }
+        composable(Screen.Chat.route) { ChatScreen() }
         composable(Screen.Board.route) {
             BoardScreen(onTaskClick = { taskId -> navController.navigate(Screen.TaskDetail.route(taskId)) })
         }
@@ -55,7 +56,6 @@ fun AppNavHost(
             TaskDetailScreen(onBack = { navController.popBackStack() })
         }
         composable(Screen.Review.route) { ReviewScreen() }
-        composable(Screen.Chat.route) { ChatScreen() }
         composable(Screen.Settings.route) {
             SettingsScreen(
                 onLogsClick = { navController.navigate(Screen.Logs.route) },

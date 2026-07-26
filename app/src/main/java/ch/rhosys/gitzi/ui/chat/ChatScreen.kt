@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,9 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -47,41 +46,43 @@ fun ChatScreen(viewModel: ChatViewModel = hiltViewModel()) {
         if (state.messages.isNotEmpty()) listState.animateScrollToItem(state.messages.size - 1)
     }
 
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Chat with the main agent") }) },
-        bottomBar = {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                OutlinedTextField(
-                    value = draft,
-                    onValueChange = { draft = it },
-                    modifier = Modifier.weight(1f),
-                    placeholder = { Text("Message the main agent…") },
-                )
-                IconButton(
-                    onClick = {
-                        viewModel.sendMessage(draft)
-                        draft = ""
-                    },
-                    enabled = !state.isSending && draft.isNotBlank(),
-                ) { Icon(Icons.Default.Send, contentDescription = "Send") }
-            }
-        },
-    ) { padding ->
+    Column(
+        modifier = Modifier.fillMaxSize().imePadding(),
+    ) {
         if (state.messages.isEmpty()) {
-            EmptyState("Say hello — create an epic, ask for status, or just chat.", Modifier.padding(padding))
+            EmptyState(
+                "Say hello — create an epic, ask for status, or just chat.",
+                Modifier.weight(1f),
+            )
         } else {
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.weight(1f).fillMaxWidth(),
                 contentPadding = PaddingValues(12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(state.messages) { message -> ChatBubble(message) }
             }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            OutlinedTextField(
+                value = draft,
+                onValueChange = { draft = it },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Message the main agent…") },
+            )
+            IconButton(
+                onClick = {
+                    viewModel.sendMessage(draft)
+                    draft = ""
+                },
+                enabled = !state.isSending && draft.isNotBlank(),
+            ) { Icon(Icons.Default.Send, contentDescription = "Send") }
         }
     }
 }

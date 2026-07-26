@@ -1,6 +1,7 @@
 package ch.rhosys.gitzi.ui.epics
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,16 +17,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -36,19 +36,12 @@ fun EpicsScreen(onEpicClick: (String) -> Unit, viewModel: EpicsViewModel = hiltV
     val state by viewModel.uiState.collectAsState()
     var showCreateDialog by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Epics") }) },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { showCreateDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "New epic")
-            }
-        },
-    ) { padding ->
+    Box(modifier = Modifier.fillMaxSize()) {
         if (state.epics.isEmpty() && !state.isLoading) {
-            EmptyState("No epics yet — tap + to create one.", modifier = Modifier.padding(padding))
+            EmptyState("No epics yet — tap + to create one.")
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -56,6 +49,13 @@ fun EpicsScreen(onEpicClick: (String) -> Unit, viewModel: EpicsViewModel = hiltV
                     EpicRow(summary, onClick = { onEpicClick(summary.epic.id) })
                 }
             }
+        }
+
+        FloatingActionButton(
+            onClick = { showCreateDialog = true },
+            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "New epic")
         }
     }
 

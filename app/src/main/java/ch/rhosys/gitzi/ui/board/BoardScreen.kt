@@ -6,21 +6,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column as ColumnLayout
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,22 +32,23 @@ import ch.rhosys.gitzi.ui.common.color
 fun BoardScreen(onTaskClick: (String) -> Unit, viewModel: BoardViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsState()
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Board") }) }) { padding ->
-        LazyRow(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            items(Column.all()) { column ->
-                BoardLane(column = column, tasks = state.tasksByColumn[column].orEmpty(), onTaskClick = onTaskClick)
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Column.all().forEach { column ->
+            val tasks = state.tasksByColumn[column].orEmpty()
+            item(key = column.name) {
+                BoardSection(column = column, tasks = tasks, onTaskClick = onTaskClick)
             }
         }
     }
 }
 
 @Composable
-private fun BoardLane(column: Column, tasks: List<Task>, onTaskClick: (String) -> Unit) {
-    ColumnLayout(modifier = Modifier.width(240.dp).fillMaxHeight()) {
+private fun BoardSection(column: Column, tasks: List<Task>, onTaskClick: (String) -> Unit) {
+    ColumnLayout(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier =
                 Modifier
@@ -68,11 +64,11 @@ private fun BoardLane(column: Column, tasks: List<Task>, onTaskClick: (String) -
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(top = 8.dp),
+        ColumnLayout(
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(tasks, key = { it.id }) { task ->
+            tasks.forEach { task ->
                 TaskCard(task = task, onClick = { onTaskClick(task.id) })
             }
         }
