@@ -7,6 +7,13 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 ### Direct messaging
 - Basic back-and-forth text chat with the agent (exists today, needs polish)
 
+### Message rendering
+- Full markdown support in agent responses (headings, bold, italic, lists, blockquotes)
+- Code blocks with syntax highlighting
+- Inline hyperlinks that deep-link to in-app screens (tasks, epics, review queue items)
+- Rich cards for attachments / documents — embedded previews in the message flow
+- Plain text with auto-linked references (e.g., task IDs, epic names become tappable links)
+
 ### Conversation stacking
 - On-device LLM (Android on-board) classifies each new user message as "same conversation" or "new topic"
 - **Same conversation**: tell the server to stop processing the previous message, amend the context, continue in the same session
