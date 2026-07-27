@@ -151,6 +151,23 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - **User error only on contention** — display an error message only when a `4XX` response indicates real contention (e.g., `412 Precondition Failed` for stale context, `409 Conflict`)
 - All other failures (5XX, timeouts, network drops) are retried silently
 
+### Theming
+- Light / dark / system toggle in Settings
+- Material 3 defaults for now — custom brand theme later
+
+### Animations
+- Custom, polished animations throughout — not just Material defaults
+- Gesture-driven sliding detail panel animation
+- Smooth, intentional transitions between screens (bottom nav, overflow items)
+
+### Accessibility
+- Fully accessible from day one
+- TalkBack support with meaningful content descriptions on all interactive elements
+- Minimum touch targets (48dp per Material guidelines)
+- Screen reader navigation order must make sense for the chat-first layout
+- Sliding detail panel must be accessible via gestures and focus navigation
+- Diff viewer must support screen readers (line-by-line reading of changes)
+
 ### Contextual bring-up
 - User can pull a domain object (task, epic, review queue item, code diff, canvas) into the active chat as a rich inline element
 - Both user and agent can see it, comment on it, and the agent can modify it based on the discussion
