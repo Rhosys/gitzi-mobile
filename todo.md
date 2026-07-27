@@ -74,7 +74,17 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - Login flow handled by the Authress SDK; session cookie stored and refreshed automatically
 - OkHttp `CookieJar` attaches the session cookie to every HTTP request and WebSocket upgrade
 - The app never stores or transmits raw credentials
-- Setup screen collects only the server URL (no token field)
+- Default setup flow uses the default Gitzi API URL — no server URL input needed
+- Server URL remains editable in Settings for self-hosted / on-prem deployments
+
+### Onboarding
+- On first launch, connect to default API and run Authress login flow
+- After auth, **validate the user's setup** — check account state (projects, agents, repos, config)
+- Show **tailored onboarding** based on validation:
+  - New user with no projects → guided setup ("Let's set up your first project")
+  - Existing user with active work → jump straight to chat with a summary of what's waiting
+- The agent drives onboarding conversationally in chat — no separate onboarding screens/wizards
+- Setup screen (server URL entry) is only shown if the user explicitly navigates to Settings for self-hosted config
 
 ### Review queue — conversational flow
 - Each review item opens as a **stacked conversation** — the agent pushes it, not the user
