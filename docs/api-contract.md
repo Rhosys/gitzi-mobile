@@ -72,20 +72,17 @@ message, it includes `If-Match: "<last-known-etag>"`. If the session state
 has moved on, the server returns `412 Precondition Failed` and the client
 discards the stale message rather than injecting it into the wrong context.
 
-## WebSocket — `GET /v1/events` (upgraded)
+## Data sync — HTTP polling (no WebSocket)
 
-One connection per session, reconnected automatically whenever the server URL
-changes (`RemoteGitziRepository`). Every message is a **full
-snapshot** of one entity type — the same "rebuild the projection, don't diff
-it" approach the daemon already uses for `KanbanBoard`:
+The mobile app uses **HTTP polling**, not WebSockets. The existing REST
+endpoints (`GET /v1/tasks`, `/v1/epics`, `/v1/chat`, `/v1/review-queue`,
+`/v1/config`) are polled while the app is foregrounded. Chat endpoints are
+polled more frequently (waiting for agent responses); board/epics/config
+less so. Every response is a **full snapshot** — the same "rebuild the
+projection, don't diff it" approach the daemon uses for `KanbanBoard`.
 
-```json
-{"type": "tasks", "tasks": [...]}
-{"type": "epics", "epics": [...]}
-{"type": "review_queue", "items": [...]}
-{"type": "chat", "messages": [...]}
-{"type": "config", "config": {...}}
-```
+The `GET /v1/events` WebSocket endpoint may still exist server-side for
+other clients, but the mobile app does not use it.
 
 ## The one-thing-at-a-time contract
 

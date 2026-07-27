@@ -124,6 +124,14 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - This prevents stale messages from landing in the wrong context (e.g., session was popped, agent already responded)
 - **API contract**: chat mutation endpoints (`POST /v1/chat`, `PATCH .../messages/{mid}`) must support `If-Match` with session ETags
 
+### Network model — polling, no WebSockets
+- **No WebSocket, no SSE, no background services**
+- **HTTP polling** for all data: chat messages, board state, epics, review queue, config
+- Poll on app open and at a reasonable interval while foregrounded
+- Chat polling can be more frequent (waiting for agent responses) vs. board/epics (less frequent)
+- Server already sends full snapshots — no incremental diff reconciliation needed
+- Existing `GitziEventSocket` (WebSocket client) to be replaced with a polling-based approach
+
 ### Contextual bring-up
 - User can pull a domain object (task, epic, review queue item, code diff, canvas) into the active chat as a rich inline element
 - Both user and agent can see it, comment on it, and the agent can modify it based on the discussion
