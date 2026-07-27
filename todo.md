@@ -80,7 +80,7 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - Each review item opens as a **stacked conversation** — the agent pushes it, not the user
 - The user discusses, asks questions, sees diffs/tasks via the sliding detail panel, then approves/rejects/answers conversationally
 - One at a time — resolve one, agent pops it and stacks the next. No choosing, no deferring.
-- **Two nav buttons** in the app bar: back to main chat, or step through review queue items
+- **Two prominent buttons centered on screen**: go to main chat, or go to a review queue item — the user picks what they want
 - **Overflow menu** includes a full list of all **active agent executions** (not just review items — everything agents are currently working on)
 - The agent pops the review conversation when resolved and moves to the next item automatically
 
