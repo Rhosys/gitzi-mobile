@@ -22,6 +22,12 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - The agent (backend) decides when a stacked side conversation is finished and pops the stack automatically
 - UI needs to visually represent the stack (e.g., show that a background conversation is still running)
 
+### Notifications & background behavior
+- No push notifications (FCM) — the app does not poll or push data in the background
+- When the user opens the app, the WebSocket reconnects and delivers whatever is waiting (new messages, review queue items, task updates)
+- There will always be something waiting — no need to alert the user externally
+- This keeps the app simple: no notification channels, no background services, no runtime notification permissions
+
 ### Message interactions
 - Long-press on any message opens a context menu: Copy, Edit (user messages only), Delete (user messages only)
 - **Copy**: activates text selection mode on the message for 20 seconds, then auto-deactivates. During copy mode, the user can select and copy parts of the message text.
