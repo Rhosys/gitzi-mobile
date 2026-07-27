@@ -14,7 +14,6 @@ import javax.inject.Inject
 
 data class SetupUiState(
     val serverUrl: String = "",
-    val apiToken: String = "",
     val useMockData: Boolean = true,
     val isTesting: Boolean = false,
     val error: String? = null,
@@ -34,16 +33,12 @@ class SetupViewModel
             viewModelScope.launch {
                 val current = connectionSettings.settings.first()
                 _uiState.value =
-                    SetupUiState(serverUrl = current.serverUrl, apiToken = current.apiToken, useMockData = current.useMockData)
+                    SetupUiState(serverUrl = current.serverUrl, useMockData = current.useMockData)
             }
         }
 
         fun onServerUrlChange(value: String) {
             _uiState.value = _uiState.value.copy(serverUrl = value, error = null)
-        }
-
-        fun onApiTokenChange(value: String) {
-            _uiState.value = _uiState.value.copy(apiToken = value, error = null)
         }
 
         fun onUseMockDataChange(value: Boolean) {
@@ -56,7 +51,6 @@ class SetupViewModel
             val state = _uiState.value
             viewModelScope.launch {
                 connectionSettings.setServerUrl(state.serverUrl.trim())
-                connectionSettings.setApiToken(state.apiToken.trim())
                 connectionSettings.setUseMockData(state.useMockData)
 
                 if (state.useMockData) {

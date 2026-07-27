@@ -8,8 +8,6 @@ interface ConnectionSettingsRepository {
 
     suspend fun setServerUrl(url: String)
 
-    suspend fun setApiToken(token: String)
-
     suspend fun setUseMockData(enabled: Boolean)
 
     suspend fun setPaired(paired: Boolean)

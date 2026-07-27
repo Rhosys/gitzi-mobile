@@ -68,6 +68,14 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - The Epics screen is a read-only overview with progress bars; tapping an epic opens the detail panel
 - The Board screen is a read-only overview of task flow; tapping a task opens the detail panel
 
+### Authentication — Authress
+- Cookie/session-based auth via Authress — no bearer tokens, no API keys
+- Port the Authress React Native SDK to Kotlin for this app
+- Login flow handled by the Authress SDK; session cookie stored and refreshed automatically
+- OkHttp `CookieJar` attaches the session cookie to every HTTP request and WebSocket upgrade
+- The app never stores or transmits raw credentials
+- Setup screen collects only the server URL (no token field)
+
 ### Contextual bring-up
 - User can pull a domain object (task, epic, review queue item, code diff, canvas) into the active chat as a rich inline element
 - Both user and agent can see it, comment on it, and the agent can modify it based on the discussion

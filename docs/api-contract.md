@@ -3,7 +3,7 @@
 No Gitzi server exists yet — this app was built against the contract below so
 a future backend has a concrete target to implement, and so the mobile app's
 Retrofit/WebSocket layer (`data/remote/`) can be pointed at a real deployment
-by changing nothing but the base URL and token in Settings.
+by changing nothing but the base URL in Settings.
 
 The daemon in the `gitzi` repo already exposes this exact functionality to
 agents over MCP (`src/mcp/tools.rs`, `gitzi_*` tools). This contract is the
@@ -29,10 +29,13 @@ The mobile app never talks to a model provider directly — see
 
 ## Auth
 
-Every request carries `Authorization: Bearer <token>`. Token issuance /
-pairing flow (e.g. a `gitzi mobile pair` command generating a scoped token)
-is left to the backend; the app just stores whatever token the user enters
-in Settings and sends it on every request and on the WebSocket upgrade.
+Cookie/session-based authentication via **Authress**. The app uses a ported
+Kotlin implementation of the Authress React Native SDK to handle login and
+session management. After the user authenticates through the Authress login
+flow, the SDK stores a session cookie that OkHttp's `CookieJar` attaches to
+every HTTP request and WebSocket upgrade automatically — no bearer tokens,
+no manual header injection. The session is refreshed transparently by the
+SDK; the app never stores or transmits raw credentials.
 
 ## REST — `GitziApiService` (`data/remote/GitziApiService.kt`)
 
@@ -63,7 +66,7 @@ them to/from the domain models in `domain/model/`.
 ## WebSocket — `GET /v1/events` (upgraded)
 
 One connection per session, reconnected automatically whenever the server URL
-or token changes (`RemoteGitziRepository`). Every message is a **full
+changes (`RemoteGitziRepository`). Every message is a **full
 snapshot** of one entity type — the same "rebuild the projection, don't diff
 it" approach the daemon already uses for `KanbanBoard`:
 

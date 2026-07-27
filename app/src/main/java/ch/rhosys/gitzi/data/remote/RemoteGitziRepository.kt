@@ -58,18 +58,18 @@ class RemoteGitziRepository
 
         init {
             connectionSettings.settings
-                .map { it.serverUrl to it.apiToken }
+                .map { it.serverUrl }
                 .distinctUntilChanged()
-                .onEach { (serverUrl, token) -> reconnectSocket(serverUrl, token) }
+                .onEach { serverUrl -> reconnectSocket(serverUrl) }
                 .launchIn(scope)
         }
 
-        private fun reconnectSocket(serverUrl: String, token: String) {
+        private fun reconnectSocket(serverUrl: String) {
             socketJob?.cancel()
             if (serverUrl.isBlank()) return
             socketJob =
                 scope.launch {
-                    eventSocket.connect(serverUrl, token).collect { event ->
+                    eventSocket.connect(serverUrl).collect { event ->
                         when (event) {
                             is GitziWireEvent.Epics -> epics.value = event.epics.map { it.toDomain() }
                             is GitziWireEvent.Tasks -> tasks.value = event.tasks.map { it.toDomain() }

@@ -75,13 +75,6 @@ fun SetupScreen(onSetupComplete: () -> Unit, viewModel: SetupViewModel = hiltVie
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
-            OutlinedTextField(
-                value = state.apiToken,
-                onValueChange = viewModel::onApiTokenChange,
-                label = { Text("API token") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
         }
 
         state.error?.let {
