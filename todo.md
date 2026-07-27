@@ -139,6 +139,18 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - Server already sends full snapshots — no incremental diff reconciliation needed
 - Existing `GitziEventSocket` (WebSocket client) to be replaced with a polling-based approach
 
+### Deep linking
+- App registers Android App Links (`https://gitzigo.com/...`) and custom scheme (`gitzi://...`)
+- Links to tasks, epics, chat sessions open directly into the sliding detail panel
+- External sources (Slack, email, browser) can deep-link into specific objects
+
+### Error handling & retries
+- **Silent retries** — network failures retry automatically, user sees cached data in the meantime
+- **No error banners or toast messages** for transient failures
+- **API must be idempotent** — retries use `previousMessageId` / `If-Match` expectations so duplicate sends are safe
+- **User error only on contention** — display an error message only when a `4XX` response indicates real contention (e.g., `412 Precondition Failed` for stale context, `409 Conflict`)
+- All other failures (5XX, timeouts, network drops) are retried silently
+
 ### Contextual bring-up
 - User can pull a domain object (task, epic, review queue item, code diff, canvas) into the active chat as a rich inline element
 - Both user and agent can see it, comment on it, and the agent can modify it based on the discussion
