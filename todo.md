@@ -72,10 +72,17 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - Cookie/session-based auth via Authress — no bearer tokens, no API keys
 - Port the Authress React Native SDK to Kotlin for this app
 - Login flow handled by the Authress SDK; session cookie stored and refreshed automatically
-- OkHttp `CookieJar` attaches the session cookie to every HTTP request and WebSocket upgrade
+- OkHttp `CookieJar` attaches the session cookie to every HTTP request and poll
 - The app never stores or transmits raw credentials
 - Default setup flow uses the default Gitzi API URL — no server URL input needed
 - Server URL remains editable in Settings for self-hosted / on-prem deployments
+- **Session expiry**: Authress SDK silently refreshes the session in the background
+- **Refresh failure during chat send**:
+  - Store the pending message locally
+  - Redirect to Authress login screen
+  - After re-auth, redisplay the stored message for user confirmation
+  - On confirm, send with `If-Match` — if the conversation moved on, discard and notify
+- **Refresh failure on reads**: show cached data, re-auth when the user takes an action
 
 ### Onboarding
 - On first launch, connect to default API and run Authress login flow
