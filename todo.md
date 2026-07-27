@@ -94,9 +94,21 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - **Overflow menu** includes a full list of all **active agent executions** (not just review items — everything agents are currently working on)
 - The agent pops the review conversation when resolved and moves to the next item automatically
 
+### Agent status
+- Agent activity is visible **only on task cards** on the board (e.g., "agent is working" state)
+- No typing indicators, status bars, or special chat UI for agent activity
+- The board is the place to see what agents are doing; chat is just conversation
+
 ### Search
 - No search bar anywhere in the app
 - Search is conversational — ask the agent to find tasks, epics, or history
+
+### Code diff rendering
+- **Inline preview**: compact syntax-highlighted diff block in the chat message (unified format)
+- **Full diff viewer**: tapping the inline preview opens the sliding detail panel with a complete diff view
+- Diff viewer is **native Kotlin** — optimized diff library, not a WebView
+- Supports syntax highlighting, line numbers, added/removed/context lines
+- Must handle large diffs performantly (lazy rendering, virtualized scrolling)
 
 ### Contextual bring-up
 - User can pull a domain object (task, epic, review queue item, code diff, canvas) into the active chat as a rich inline element
