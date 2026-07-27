@@ -35,6 +35,18 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - **Delete**: shows a confirmation dialog. On confirm, calls `DELETE /v1/chat/sessions/{sessionId}/messages/{messageId}` and removes the message from the local chat list.
 - Edit and Delete are only available on user-sent messages (ChatRole.User).
 
+### Two-panel detail screen
+- Tapping a task, epic, review queue item, or any domain object opens a two-panel screen:
+  - **Top panel**: the object summary (task details, epic overview, etc.)
+    - Two display modes: **immutable** (read-only view, default) and **mutable** (edit mode)
+    - Read-only items (e.g. completed tasks, agent output, code diffs) always show immutable view
+    - Editable items (tasks, epics) have a toggle/button to switch to mutable view with inline editing
+  - **Bottom panel**: a small chat interface scoped to that object, for discussing it with the agent
+    - Agent can act on the object based on the conversation (update fields, change stage, etc.)
+    - Chat context is tied to the object — the agent knows what's being discussed
+- This replaces the current standalone TaskDetail and EpicDetail screens
+- Same pattern applies to review queue items, code diffs, canvases brought up in chat
+
 ### Contextual bring-up
 - User can pull a domain object (task, epic, review queue item, code diff, canvas) into the active chat as a rich inline element
 - Both user and agent can see it, comment on it, and the agent can modify it based on the discussion
