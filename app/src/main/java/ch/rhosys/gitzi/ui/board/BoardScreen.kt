@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -27,6 +26,7 @@ import ch.rhosys.gitzi.domain.model.Column
 import ch.rhosys.gitzi.domain.model.Task
 import ch.rhosys.gitzi.ui.common.PriorityBadge
 import ch.rhosys.gitzi.ui.common.color
+import ch.rhosys.gitzi.ui.theme.StageBuffer
 
 @Composable
 fun BoardScreen(onTaskClick: (String) -> Unit, viewModel: BoardViewModel = hiltViewModel()) {
@@ -37,7 +37,7 @@ fun BoardScreen(onTaskClick: (String) -> Unit, viewModel: BoardViewModel = hiltV
         contentPadding = PaddingValues(12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Column.all().forEach { column ->
+        Column.laneColumns().forEach { column ->
             val tasks = state.tasksByColumn[column].orEmpty()
             item(key = column.name) {
                 BoardSection(column = column, tasks = tasks, onTaskClick = onTaskClick)
@@ -69,21 +69,35 @@ private fun BoardSection(column: Column, tasks: List<Task>, onTaskClick: (String
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             tasks.forEach { task ->
-                TaskCard(task = task, onClick = { onTaskClick(task.id) })
+                val isBuffered = task.stage.toColumn().isBuffer
+                TaskCard(task = task, isBuffered = isBuffered, onClick = { onTaskClick(task.id) })
             }
         }
     }
 }
 
 @Composable
-fun TaskCard(task: Task, onClick: () -> Unit) {
+fun TaskCard(task: Task, isBuffered: Boolean = false, onClick: () -> Unit) {
+    val containerColor = if (isBuffered) {
+        StageBuffer.copy(alpha = 0.15f)
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         ColumnLayout(modifier = Modifier.padding(12.dp)) {
+            if (isBuffered) {
+                Text(
+                    text = "Awaiting review",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = StageBuffer,
+                )
+            }
             Text(
                 text = task.title,
                 style = MaterialTheme.typography.bodyMedium,

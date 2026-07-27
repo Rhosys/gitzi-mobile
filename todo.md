@@ -49,6 +49,17 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - This replaces the current standalone TaskDetail and EpicDetail screens
 - Same pattern applies to review queue items, code diffs, canvases brought up in chat
 
+### Board layout
+- Board shows columns vertically (top to bottom), one section per logical stage
+- **Buffer stages are merged into the preceding column**, not shown as separate sections:
+  - CodingBuffer tasks appear inside the Designing section
+  - ReviewBuffer tasks appear inside the Coding section
+  - SecurityAuditBuffer tasks appear inside the Reviewing section
+  - DeploymentBuffer tasks appear inside the Auditing section
+- Buffer tasks are visually distinguished with a **tint/highlight** on their card to indicate they are blocked on human review
+- This reduces the number of board sections from ~10 to ~6 (Prioritized, Designing, Coding, Reviewing, Auditing, Done)
+- Tapping any task card opens the top-down sliding detail panel (see above)
+
 ### Contextual bring-up
 - User can pull a domain object (task, epic, review queue item, code diff, canvas) into the active chat as a rich inline element
 - Both user and agent can see it, comment on it, and the agent can modify it based on the discussion
