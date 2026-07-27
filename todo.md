@@ -168,6 +168,41 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - Sliding detail panel must be accessible via gestures and focus navigation
 - Diff viewer must support screen readers (line-by-line reading of changes)
 
+### Platform targets
+- Min API 31 (Android 12) — Material You dynamic colors; may broaden later
+- All strings in `res/values/strings.xml` from day one — English authored, Google Play auto-translate for other languages
+
+### Security
+- HTTPS + Authress session cookies — no cert pinning, no encrypted storage, no integrity checks
+
+### Testing
+- Unit tests on everything — ViewModels, repositories, mappers, domain logic
+- No UI or integration tests for now
+
+### Analytics
+- PostHog (already wired up) tracking crashes and feature usage
+- Screen visits, board vs. chat engagement, review completion time
+
+### Performance
+- No hard budgets — measure and optimize as opportunities arise
+
+### Settings screen
+- Account info, logout
+- Theme toggle (light / dark / system)
+- Agent role editing (model + provider)
+- Build version ref, build number, CI/CD build number
+- Advanced: server URL for self-hosted / on-prem deployments
+- Debug only: mock data toggle
+
+### Chat history
+- One continuous chat history the user scrolls back through
+- Previous stacked conversations are not in the main history — linked from their respective tasks
+
+### Multi-device / multi-user
+- Chat is **per-user** — each person has their own conversation with the agent
+- No shared team chat
+- Same user on multiple devices sees the same chat (synced via the server)
+
 ### Contextual bring-up
 - User can pull a domain object (task, epic, review queue item, code diff, canvas) into the active chat as a rich inline element
 - Both user and agent can see it, comment on it, and the agent can modify it based on the discussion
