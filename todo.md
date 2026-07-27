@@ -76,6 +76,18 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - The app never stores or transmits raw credentials
 - Setup screen collects only the server URL (no token field)
 
+### Review queue — conversational flow
+- Each review item opens as a **stacked conversation** — the agent pushes it, not the user
+- The user discusses, asks questions, sees diffs/tasks via the sliding detail panel, then approves/rejects/answers conversationally
+- One at a time — resolve one, agent pops it and stacks the next. No choosing, no deferring.
+- **Two nav buttons** in the app bar: back to main chat, or step through review queue items
+- **Overflow menu** includes a full list of all **active agent executions** (not just review items — everything agents are currently working on)
+- The agent pops the review conversation when resolved and moves to the next item automatically
+
+### Search
+- No search bar anywhere in the app
+- Search is conversational — ask the agent to find tasks, epics, or history
+
 ### Contextual bring-up
 - User can pull a domain object (task, epic, review queue item, code diff, canvas) into the active chat as a rich inline element
 - Both user and agent can see it, comment on it, and the agent can modify it based on the discussion
