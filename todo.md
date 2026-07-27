@@ -60,6 +60,14 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - This reduces the number of board sections from ~10 to ~6 (Prioritized, Designing, Coding, Reviewing, Auditing, Done)
 - Tapping any task card opens the top-down sliding detail panel (see above)
 
+### Epic & task creation / editing
+- **Creation**: epics and tasks are created only via the API (agent/backend). No create UI in the app — no FABs, no "new epic" dialogs.
+- **Editing**: existing epics and tasks can be edited either:
+  - Directly by the user in the app (via the sliding detail panel's mutable mode)
+  - Via the API (agent updating fields through chat or backend logic)
+- The Epics screen is a read-only overview with progress bars; tapping an epic opens the detail panel
+- The Board screen is a read-only overview of task flow; tapping a task opens the detail panel
+
 ### Contextual bring-up
 - User can pull a domain object (task, epic, review queue item, code diff, canvas) into the active chat as a rich inline element
 - Both user and agent can see it, comment on it, and the agent can modify it based on the discussion
