@@ -63,6 +63,15 @@ SDK; the app never stores or transmits raw credentials.
 Request/response DTOs live in `data/remote/dto/Dtos.kt`; `Mappers.kt` converts
 them to/from the domain models in `domain/model/`.
 
+### Conditional requests (offline message queue)
+
+Chat mutation endpoints (`POST /v1/chat`, `PATCH .../messages/{mid}`) support
+`If-Match` with session ETags. The server includes an `ETag` header in
+responses for chat session state. When the client sends a queued offline
+message, it includes `If-Match: "<last-known-etag>"`. If the session state
+has moved on, the server returns `412 Precondition Failed` and the client
+discards the stale message rather than injecting it into the wrong context.
+
 ## WebSocket — `GET /v1/events` (upgraded)
 
 One connection per session, reconnected automatically whenever the server URL

@@ -110,6 +110,20 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - Supports syntax highlighting, line numbers, added/removed/context lines
 - Must handle large diffs performantly (lazy rendering, virtualized scrolling)
 
+### Attachments
+- No file or media attachments in chat for now
+- Users reference what they need via URLs or text references (task IDs, file paths, epic names)
+- The agent resolves references from the repo/system
+
+### Offline behavior & caching
+- **All data cached locally** — board, chat history, epics, config are browsable read-only when offline
+- **Message queuing**: user can compose messages offline; they queue locally and send on reconnect
+- **Conditional sends**: before sending a queued message, the API validates a precondition (`If-Match` / ETag on the chat session state)
+  - If the conversation is still in the same state → send normally
+  - If the conversation has moved on (`412 Precondition Failed`) → discard the queued message and notify the user
+- This prevents stale messages from landing in the wrong context (e.g., session was popped, agent already responded)
+- **API contract**: chat mutation endpoints (`POST /v1/chat`, `PATCH .../messages/{mid}`) must support `If-Match` with session ETags
+
 ### Contextual bring-up
 - User can pull a domain object (task, epic, review queue item, code diff, canvas) into the active chat as a rich inline element
 - Both user and agent can see it, comment on it, and the agent can modify it based on the discussion
