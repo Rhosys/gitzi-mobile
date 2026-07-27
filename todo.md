@@ -35,15 +35,17 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - **Delete**: shows a confirmation dialog. On confirm, calls `DELETE /v1/chat/sessions/{sessionId}/messages/{messageId}` and removes the message from the local chat list.
 - Edit and Delete are only available on user-sent messages (ChatRole.User).
 
-### Two-panel detail screen
-- Tapping a task, epic, review queue item, or any domain object opens a two-panel screen:
-  - **Top panel**: the object summary (task details, epic overview, etc.)
-    - Two display modes: **immutable** (read-only view, default) and **mutable** (edit mode)
-    - Read-only items (e.g. completed tasks, agent output, code diffs) always show immutable view
-    - Editable items (tasks, epics) have a toggle/button to switch to mutable view with inline editing
-  - **Bottom panel**: a small chat interface scoped to that object, for discussing it with the agent
-    - Agent can act on the object based on the conversation (update fields, change stage, etc.)
-    - Chat context is tied to the object — the agent knows what's being discussed
+### Object detail — top-down sliding panel over chat
+- Tapping a task, epic, review queue item, or any domain object opens a **top-down sliding panel** that overlays the chat:
+  - The panel slides down from the top of the screen, partially covering the chat
+  - User can **pull it down** to expand and review the object in full detail
+  - User can **slide it back up** to minimize/dismiss and focus on the chat
+  - The chat interface remains visible and **fully interactive underneath** at all times — the user can type, scroll, and send messages even with the panel partially open
+- **Panel content**:
+  - Two display modes: **immutable** (read-only view, default) and **mutable** (edit mode)
+  - Read-only items (completed tasks, agent output, code diffs) always show immutable view
+  - Editable items (tasks, epics) have a toggle/button to switch to mutable view with inline editing
+- The contextual chat below is scoped to the object — the agent knows what's being discussed and can act on it
 - This replaces the current standalone TaskDetail and EpicDetail screens
 - Same pattern applies to review queue items, code diffs, canvases brought up in chat
 
