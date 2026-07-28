@@ -24,7 +24,7 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 
 ### Notifications & background behavior
 - No push notifications (FCM) — the app does not poll or push data in the background
-- When the user opens the app, the WebSocket reconnects and delivers whatever is waiting (new messages, review queue items, task updates)
+- When the user opens the app, data is fetched fresh (review queue polled every 60s, board/epics on demand)
 - There will always be something waiting — no need to alert the user externally
 - This keeps the app simple: no notification channels, no background services, no runtime notification permissions
 
@@ -131,13 +131,13 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - This prevents stale messages from landing in the wrong context (e.g., session was popped, agent already responded)
 - **API contract**: chat mutation endpoints (`POST /v1/chat`, `PATCH .../messages/{mid}`) must support `If-Match` with session ETags
 
-### Network model — polling, no WebSockets
+### Network model — synchronous chat + polling
 - **No WebSocket, no SSE, no background services**
-- **HTTP polling** for all data: chat messages, board state, epics, review queue, config
-- Poll on app open and at a reasonable interval while foregrounded
-- Chat polling can be more frequent (waiting for agent responses) vs. board/epics (less frequent)
-- Server already sends full snapshots — no incremental diff reconciliation needed
-- Existing `GitziEventSocket` (WebSocket client) to be replaced with a polling-based approach
+- **Chat responses are synchronous** — the API call blocks until the agent responds; no polling for chat
+- **Review queue polling**: poll `GET /v1/review-queue` every 60 seconds while foregrounded
+- Board, epics, and config are fetched on demand (screen open / pull-to-refresh), not continuously polled
+- Server sends full snapshots — no incremental diff reconciliation needed
+- Existing `GitziEventSocket` (WebSocket client) to be replaced with synchronous + polling approach
 
 ### Deep linking
 - App registers Android App Links (`https://gitzigo.com/...`) and custom scheme (`gitzi://...`)
@@ -203,8 +203,22 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - No shared team chat
 - Same user on multiple devices sees the same chat (synced via the server)
 
-### Contextual bring-up
-- User can pull a domain object (task, epic, review queue item, code diff, canvas) into the active chat as a rich inline element
-- Both user and agent can see it, comment on it, and the agent can modify it based on the discussion
+### Contextual bring-up — `@` references
+- Typing `@` in the chat input triggers **autocomplete** for domain objects (tasks, epics, review queue items, code diffs, canvases)
+- Selecting an item from autocomplete embeds an inline chip/reference in the message
+- Both user and agent can see the referenced object, comment on it, and the agent can modify it based on the discussion
 - Review queue items surface in the chat — the agent presents a question or approval request in the chat, and the user responds conversationally (not through a separate form on a separate screen)
-- This is also the mechanism for new messages: attach a task/epic/diff to your message for context
+- This is also the mechanism for new messages: attach a task/epic/diff to your message via `@` reference for context
+
+### Detail panel editing — all fields
+- All fields on tasks and epics are **directly user-editable** in the sliding detail panel's mutable mode
+- Tasks: title, description, status/column, priority, assignee, blocked-by — everything
+- Epics: title, description, target date, linked tasks — everything
+- No fields are locked behind agent-only access — the user can always edit directly
+- The agent can also update fields via chat or backend logic
+
+### Conversation stacking — visible indicators
+- **Stack depth count** is visible in the UI — user can see how many conversations are stacked (e.g., "2 stacked")
+- **Review queue count** is visible — user can see how many review items are waiting
+- Background async processing (agent working, stacked conversations processing) is **not** visually prominent — only the counts matter
+- The user knows at a glance: am I in a stacked conversation? How many review items are pending?
