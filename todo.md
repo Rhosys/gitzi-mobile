@@ -41,6 +41,14 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
   - User can **pull it down** to expand and review the object in full detail
   - User can **slide it back up** to minimize/dismiss and focus on the chat
   - The chat interface remains visible and **fully interactive underneath** at all times — the user can type, scroll, and send messages even with the panel partially open
+- **5 snap points** — the user can position the panel at any of 5 heights to show exactly the right amount of content vs. chat:
+  - **Hidden** (0%) — panel fully retracted, chat fills the screen
+  - **Peek** (~20%) — shows the object title/summary
+  - **Quarter** (~40%) — enough for key fields and a preview
+  - **Half** (~60%) — balanced split between panel and chat
+  - **Full** (~85-90%) — panel nearly covers the screen, chat peeking at the bottom
+- **Content scrolls within the panel** at any snap point — the user slides the panel to set the display area, then scrolls the content inside it
+- **Fling-dismiss**: fast swipe up snaps back to hidden
 - **Panel content**:
   - Two display modes: **immutable** (read-only view, default) and **mutable** (edit mode)
   - Read-only items (completed tasks, agent output, code diffs) always show immutable view
