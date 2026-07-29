@@ -217,6 +217,20 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - No fields are locked behind agent-only access — the user can always edit directly
 - The agent can also update fields via chat or backend logic
 
+### On-device conversation classification
+- **Gemini Nano via AICore** classifies each user message as "same conversation" or "new topic"
+- Zero bundle size cost — the model is part of the OS on supported devices (Pixel 8+, select Samsung flagships, Android 14+)
+- **Fallback**: devices without Gemini Nano send messages directly to the API; the server handles classification server-side
+- The on-device model bridges the gap for instant local classification; the server is the authoritative fallback
+
+### Chat input UX
+- **Single-line input** that grows as the user types, up to **half the available screen height**
+- Once the input reaches half-height, it becomes internally scrollable (no further vertical growth)
+- **No character limit** on messages
+- **Send button is always visible** (not conditionally shown)
+- **Empty send = refresh/retry**: pressing send with no text refreshes the current conversation state (acts as a retry/refresh of the known state)
+- Non-empty send: sends the message text as a new chat message
+
 ### Conversation stacking — visible indicators
 - **Stack depth count** is visible in the UI — user can see how many conversations are stacked (e.g., "2 stacked")
 - **Review queue count** is visible — user can see how many review items are waiting
