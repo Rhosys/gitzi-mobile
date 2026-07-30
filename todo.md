@@ -80,6 +80,7 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
   - Directly by the user in the app (via the sliding detail panel's mutable mode)
   - Via the API (agent updating fields through chat or backend logic)
 - The Epics screen is a read-only overview with progress bars; tapping an epic opens the detail panel
+- **Progress calculation**: completed tasks / total tasks in the epic (simple count-based, no weighting)
 - The Board screen is a read-only overview of task flow; tapping a task opens the detail panel
 
 ### Authentication — Authress
