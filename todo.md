@@ -67,6 +67,12 @@ Chat is the primary interface. Everything else (board, epics, tasks) is secondar
 - Buffer tasks are visually distinguished with a **tint/highlight** on their card to indicate they are blocked on human review
 - This reduces the number of board sections from ~10 to ~6 (Prioritized, Designing, Coding, Reviewing, Auditing, Done)
 - Tapping any task card opens the top-down sliding detail panel (see above)
+- **Card content** (compact):
+  - Task **title**
+  - Task **ID**
+  - **One line of description** (truncated with ellipsis if longer)
+  - No assignee, no priority badge, no other metadata on the card
+  - Full detail (all fields) shown in the sliding panel on tap
 
 ### Epic & task creation / editing
 - **Creation**: epics and tasks are created only via the API (agent/backend). No create UI in the app — no FABs, no "new epic" dialogs.
