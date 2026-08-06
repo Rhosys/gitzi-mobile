@@ -22,6 +22,16 @@ enum class Column(val label: String) {
     val isBuffer: Boolean
         get() = this in BUFFERS
 
+    /** The non-buffer column this buffer feeds into. Identity for non-buffers. */
+    val parentColumn: Column
+        get() = when (this) {
+            CodingBuffer -> Designing
+            ReviewBuffer -> Coding
+            SecurityAuditBuffer -> Reviewing
+            DeploymentBuffer -> Auditing
+            else -> this
+        }
+
     companion object {
         private val BUFFERS = setOf(CodingBuffer, ReviewBuffer, SecurityAuditBuffer, DeploymentBuffer)
 

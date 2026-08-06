@@ -2,6 +2,7 @@ package ch.rhosys.gitzi.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ch.rhosys.gitzi.domain.model.AgentDef
 import ch.rhosys.gitzi.domain.model.ConnectionSettings
 import ch.rhosys.gitzi.domain.model.GitziConfig
 import ch.rhosys.gitzi.domain.repository.ConnectionSettingsRepository
@@ -39,6 +40,10 @@ class SettingsViewModel
             viewModelScope.launch { connectionSettings.setUseMockData(enabled) }
         }
 
+        fun setServerUrl(url: String) {
+            viewModelScope.launch { connectionSettings.setServerUrl(url) }
+        }
+
         fun discoverProviders() {
             viewModelScope.launch {
                 _isDiscovering.value = true
@@ -49,6 +54,14 @@ class SettingsViewModel
 
         fun activateProvider(name: String) {
             viewModelScope.launch { repository.activateProvider(name) }
+        }
+
+        fun updateAgent(updated: AgentDef) {
+            viewModelScope.launch {
+                val current = uiState.value.config
+                val newAgents = current.agents.map { if (it.role == updated.role) updated else it }
+                repository.updateConfig(current.copy(agents = newAgents))
+            }
         }
 
         fun disconnect() {

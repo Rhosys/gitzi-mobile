@@ -46,13 +46,12 @@ class GitziEventSocket
         @SocketHttpClient private val okHttpClient: OkHttpClient,
         private val json: Json,
     ) {
-        fun connect(baseUrl: String, apiToken: String): Flow<GitziWireEvent> =
+        fun connect(baseUrl: String): Flow<GitziWireEvent> =
             callbackFlow {
                 val wsUrl = baseUrl.replaceFirst("http", "ws").trimEnd('/') + "/v1/events"
                 val request =
                     Request.Builder()
                         .url(wsUrl)
-                        .header("Authorization", "Bearer $apiToken")
                         .build()
 
                 val listener =

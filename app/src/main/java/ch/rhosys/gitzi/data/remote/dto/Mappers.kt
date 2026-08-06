@@ -60,7 +60,7 @@ fun ChatRoleDto.toDomain() =
         ChatRoleDto.Agent -> ChatRole.Agent
     }
 
-fun ChatMessageDto.toDomain() = ChatMessage(role.toDomain(), content, ts)
+fun ChatMessageDto.toDomain() = ChatMessage(id, sessionId, role.toDomain(), content, ts)
 
 fun ProviderKindDto.toDomain() =
     when (this) {

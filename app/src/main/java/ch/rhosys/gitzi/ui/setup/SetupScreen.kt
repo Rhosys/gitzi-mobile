@@ -71,14 +71,7 @@ fun SetupScreen(onSetupComplete: () -> Unit, viewModel: SetupViewModel = hiltVie
                 value = state.serverUrl,
                 onValueChange = viewModel::onServerUrlChange,
                 label = { Text("Server URL") },
-                placeholder = { Text("https://gitzi.your-company.com") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            OutlinedTextField(
-                value = state.apiToken,
-                onValueChange = viewModel::onApiTokenChange,
-                label = { Text("API token") },
+                placeholder = { Text("https://gitzigo.com/api") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )

@@ -21,7 +21,7 @@ android {
 
         // Assumed base URL for a Gitzi backend the user hasn't deployed yet.
         // Overridden per-connection at runtime via Settings — see ConnectionSettingsRepository.
-        buildConfigField("String", "DEFAULT_SERVER_URL", "\"https://api.gitzi.dev\"")
+        buildConfigField("String", "DEFAULT_SERVER_URL", "\"https://gitzigo.com/api\"")
     }
 
     signingConfigs {
@@ -95,6 +95,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.kotlinx.serialization)
     implementation(libs.okhttp)
+    implementation(libs.okhttp.urlconnection)
     implementation(libs.okhttp.logging.interceptor)
 
     implementation(libs.posthog.android)

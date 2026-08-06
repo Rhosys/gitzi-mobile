@@ -8,7 +8,6 @@ package ch.rhosys.gitzi.domain.model
  */
 data class ConnectionSettings(
     val serverUrl: String = "",
-    val apiToken: String = "",
     /** Debug builds only — see SwitchableGitziRepository. Ignored in release. */
     val useMockData: Boolean = true,
     val isPaired: Boolean = false,

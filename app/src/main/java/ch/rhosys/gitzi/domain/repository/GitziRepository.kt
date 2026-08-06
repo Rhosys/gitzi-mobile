@@ -64,6 +64,10 @@ interface GitziRepository {
 
     suspend fun sendChatMessage(content: String): Result<Unit>
 
+    suspend fun editChatMessage(sessionId: String, messageId: String, content: String): Result<Unit>
+
+    suspend fun deleteChatMessage(sessionId: String, messageId: String): Result<Unit>
+
     suspend fun updateConfig(config: GitziConfig): Result<Unit>
 
     suspend fun discoverProviders(): Result<List<ProviderDef>>

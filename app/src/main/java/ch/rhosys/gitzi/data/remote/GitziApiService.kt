@@ -7,6 +7,7 @@ import ch.rhosys.gitzi.data.remote.dto.CreateEpicRequest
 import ch.rhosys.gitzi.data.remote.dto.CreateTaskRequest
 import ch.rhosys.gitzi.data.remote.dto.EpicDto
 import ch.rhosys.gitzi.data.remote.dto.ChatMessageDto
+import ch.rhosys.gitzi.data.remote.dto.EditChatMessageRequest
 import ch.rhosys.gitzi.data.remote.dto.ParkTaskRequest
 import ch.rhosys.gitzi.data.remote.dto.ProviderDto
 import ch.rhosys.gitzi.data.remote.dto.RejectReviewRequest
@@ -16,6 +17,7 @@ import ch.rhosys.gitzi.data.remote.dto.TaskDto
 import ch.rhosys.gitzi.data.remote.dto.UpdateConfigRequest
 import ch.rhosys.gitzi.data.remote.dto.UpdateTaskRequest
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
@@ -68,6 +70,19 @@ interface GitziApiService {
 
     @POST("v1/chat")
     suspend fun sendChatMessage(@Body body: SendChatRequest)
+
+    @PATCH("v1/chat/sessions/{sessionId}/messages/{messageId}")
+    suspend fun editChatMessage(
+        @Path("sessionId") sessionId: String,
+        @Path("messageId") messageId: String,
+        @Body body: EditChatMessageRequest,
+    )
+
+    @DELETE("v1/chat/sessions/{sessionId}/messages/{messageId}")
+    suspend fun deleteChatMessage(
+        @Path("sessionId") sessionId: String,
+        @Path("messageId") messageId: String,
+    )
 
     @GET("v1/config")
     suspend fun getConfig(): ConfigDto

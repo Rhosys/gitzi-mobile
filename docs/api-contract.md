@@ -3,7 +3,7 @@
 No Gitzi server exists yet — this app was built against the contract below so
 a future backend has a concrete target to implement, and so the mobile app's
 Retrofit/WebSocket layer (`data/remote/`) can be pointed at a real deployment
-by changing nothing but the base URL and token in Settings.
+by changing nothing but the base URL in Settings.
 
 The daemon in the `gitzi` repo already exposes this exact functionality to
 agents over MCP (`src/mcp/tools.rs`, `gitzi_*` tools). This contract is the
@@ -29,10 +29,13 @@ The mobile app never talks to a model provider directly — see
 
 ## Auth
 
-Every request carries `Authorization: Bearer <token>`. Token issuance /
-pairing flow (e.g. a `gitzi mobile pair` command generating a scoped token)
-is left to the backend; the app just stores whatever token the user enters
-in Settings and sends it on every request and on the WebSocket upgrade.
+Cookie/session-based authentication via **Authress**. The app uses a ported
+Kotlin implementation of the Authress React Native SDK to handle login and
+session management. After the user authenticates through the Authress login
+flow, the SDK stores a session cookie that OkHttp's `CookieJar` attaches to
+every HTTP request and WebSocket upgrade automatically — no bearer tokens,
+no manual header injection. The session is refreshed transparently by the
+SDK; the app never stores or transmits raw credentials.
 
 ## REST — `GitziApiService` (`data/remote/GitziApiService.kt`)
 
@@ -50,6 +53,8 @@ in Settings and sends it on every request and on the WebSocket upgrade.
 | `POST /v1/review-queue/{id}/approve`    | Approve a buffer item                       | —                          |
 | `POST /v1/review-queue/{id}/reject`     | Reject a buffer item with feedback          | —                          |
 | `GET /v1/chat` / `POST /v1/chat`        | Main-agent chat history / send a message    | —                          |
+| `PATCH /v1/chat/sessions/{sid}/messages/{mid}` | Edit a message's content              | —                          |
+| `DELETE /v1/chat/sessions/{sid}/messages/{mid}` | Delete a message from the session      | —                          |
 | `GET /v1/config` / `PUT /v1/config`     | Providers, agents, WIP limits, repos        | —                          |
 | `POST /v1/providers/discover`           | Scan for LM Studio / Ollama / Bedrock (SSO) | provider auto-discovery    |
 | `POST /v1/providers/{name}/activate`    | Turn a discovered provider on               | `gitzi_activate_provider`  |
@@ -58,20 +63,26 @@ in Settings and sends it on every request and on the WebSocket upgrade.
 Request/response DTOs live in `data/remote/dto/Dtos.kt`; `Mappers.kt` converts
 them to/from the domain models in `domain/model/`.
 
-## WebSocket — `GET /v1/events` (upgraded)
+### Conditional requests (offline message queue)
 
-One connection per session, reconnected automatically whenever the server URL
-or token changes (`RemoteGitziRepository`). Every message is a **full
-snapshot** of one entity type — the same "rebuild the projection, don't diff
-it" approach the daemon already uses for `KanbanBoard`:
+Chat mutation endpoints (`POST /v1/chat`, `PATCH .../messages/{mid}`) support
+`If-Match` with session ETags. The server includes an `ETag` header in
+responses for chat session state. When the client sends a queued offline
+message, it includes `If-Match: "<last-known-etag>"`. If the session state
+has moved on, the server returns `412 Precondition Failed` and the client
+discards the stale message rather than injecting it into the wrong context.
 
-```json
-{"type": "tasks", "tasks": [...]}
-{"type": "epics", "epics": [...]}
-{"type": "review_queue", "items": [...]}
-{"type": "chat", "messages": [...]}
-{"type": "config", "config": {...}}
-```
+## Data sync — HTTP polling (no WebSocket)
+
+The mobile app uses **HTTP polling**, not WebSockets. The existing REST
+endpoints (`GET /v1/tasks`, `/v1/epics`, `/v1/chat`, `/v1/review-queue`,
+`/v1/config`) are polled while the app is foregrounded. Chat endpoints are
+polled more frequently (waiting for agent responses); board/epics/config
+less so. Every response is a **full snapshot** — the same "rebuild the
+projection, don't diff it" approach the daemon uses for `KanbanBoard`.
+
+The `GET /v1/events` WebSocket endpoint may still exist server-side for
+other clients, but the mobile app does not use it.
 
 ## The one-thing-at-a-time contract
 

@@ -15,11 +15,13 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
+import okhttp3.JavaNetCookieJar
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
+import java.net.CookieManager
 import javax.inject.Provider
 import javax.inject.Singleton
 
@@ -68,35 +70,30 @@ object NetworkModule {
         }
     }
 
-    private class AuthInterceptor(
-        private val settingsProvider: Provider<ConnectionSettingsRepository>,
-    ) : Interceptor {
-        override fun intercept(chain: Interceptor.Chain): Response {
-            val token = runBlocking { settingsProvider.get().settings.first().apiToken }
-            val request =
-                if (token.isBlank()) {
-                    chain.request()
-                } else {
-                    chain.request().newBuilder().header("Authorization", "Bearer $token").build()
-                }
-            return chain.proceed(request)
-        }
-    }
+    @Provides
+    @Singleton
+    fun provideCookieJar(): JavaNetCookieJar = JavaNetCookieJar(CookieManager())
 
     @Provides
     @Singleton
     @RestHttpClient
-    fun provideRestOkHttpClient(settingsProvider: Provider<ConnectionSettingsRepository>): OkHttpClient =
+    fun provideRestOkHttpClient(
+        settingsProvider: Provider<ConnectionSettingsRepository>,
+        cookieJar: JavaNetCookieJar,
+    ): OkHttpClient =
         OkHttpClient.Builder()
             .addInterceptor(DynamicBaseUrlInterceptor(settingsProvider))
-            .addInterceptor(AuthInterceptor(settingsProvider))
+            .cookieJar(cookieJar)
             .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
             .build()
 
     @Provides
     @Singleton
     @SocketHttpClient
-    fun provideSocketOkHttpClient(): OkHttpClient = OkHttpClient.Builder().build()
+    fun provideSocketOkHttpClient(cookieJar: JavaNetCookieJar): OkHttpClient =
+        OkHttpClient.Builder()
+            .cookieJar(cookieJar)
+            .build()
 
     @Provides
     @Singleton

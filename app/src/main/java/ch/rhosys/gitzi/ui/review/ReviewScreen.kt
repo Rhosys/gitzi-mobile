@@ -13,9 +13,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,51 +32,48 @@ import ch.rhosys.gitzi.ui.common.StageChip
 fun ReviewScreen(viewModel: ReviewViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsState()
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Up next") }) }) { padding ->
-        val current = state.current
-        when {
-            state.isLoading -> FullScreenLoading(Modifier.padding(padding))
-            current == null -> EmptyState("Nothing needs your attention right now.", Modifier.padding(padding))
-            else ->
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .padding(padding)
-                            .verticalScroll(rememberScrollState())
-                            .padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    state.relatedTask?.let { task ->
-                        Text(task.title, style = MaterialTheme.typography.titleMedium)
-                        StageChip(task.stage.toColumn())
-                    }
-
-                    when (val kind = current.kind) {
-                        is ReviewItemKind.AgentQuestion ->
-                            QuestionCard(
-                                question = kind.question,
-                                isSubmitting = state.isSubmitting,
-                                onAnswer = { answer -> viewModel.answer(current.id, answer) },
-                            )
-                        is ReviewItemKind.BufferApproval ->
-                            ApprovalCard(
-                                agentOutput = state.relatedTask?.agentOutput,
-                                isSubmitting = state.isSubmitting,
-                                onApprove = { viewModel.approve(current.id) },
-                                onReject = { feedback -> viewModel.reject(current.id, feedback) },
-                            )
-                    }
-
-                    if (state.remainingCount > 0) {
-                        Text(
-                            "${state.remainingCount} more waiting",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+    val current = state.current
+    when {
+        state.isLoading -> FullScreenLoading()
+        current == null -> EmptyState("Nothing needs your attention right now.")
+        else ->
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                state.relatedTask?.let { task ->
+                    Text(task.title, style = MaterialTheme.typography.titleMedium)
+                    StageChip(task.stage.toColumn())
                 }
-        }
+
+                when (val kind = current.kind) {
+                    is ReviewItemKind.AgentQuestion ->
+                        QuestionCard(
+                            question = kind.question,
+                            isSubmitting = state.isSubmitting,
+                            onAnswer = { answer -> viewModel.answer(current.id, answer) },
+                        )
+                    is ReviewItemKind.BufferApproval ->
+                        ApprovalCard(
+                            agentOutput = state.relatedTask?.agentOutput,
+                            isSubmitting = state.isSubmitting,
+                            onApprove = { viewModel.approve(current.id) },
+                            onReject = { feedback -> viewModel.reject(current.id, feedback) },
+                        )
+                }
+
+                if (state.remainingCount > 0) {
+                    Text(
+                        "${state.remainingCount} more waiting",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
     }
 }
 

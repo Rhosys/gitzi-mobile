@@ -96,6 +96,8 @@ enum class ChatRoleDto {
 
 @Serializable
 data class ChatMessageDto(
+    val id: String,
+    @SerialName("session_id") val sessionId: String,
     val role: ChatRoleDto,
     val content: String,
     val ts: Instant,
@@ -176,6 +178,9 @@ data class RejectReviewRequest(val feedback: String)
 
 @Serializable
 data class SendChatRequest(val content: String)
+
+@Serializable
+data class EditChatMessageRequest(val content: String)
 
 @Serializable
 data class UpdateConfigRequest(
